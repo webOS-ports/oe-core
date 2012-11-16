@@ -732,6 +732,7 @@ python write_specfile () {
     srcmaintainer  = d.getVar('MAINTAINER', True)
     srchomepage    = d.getVar('HOMEPAGE', True)
     srcdescription = d.getVar('DESCRIPTION', True) or "."
+    srccustomtagschunk = get_package_additional_metadata("rpm", d)
 
     srcdepends     = strip_multilib_deps(d.getVar('DEPENDS', True), d)
     srcrdepends    = []
@@ -785,6 +786,7 @@ python write_specfile () {
         splitlicense = (localdata.getVar('LICENSE', True) or "")
         splitsection = (localdata.getVar('SECTION', True) or "")
         splitdescription = (localdata.getVar('DESCRIPTION', True) or ".")
+        splitcustomtagschunk = get_package_additional_metadata("rpm", localdata)
 
         translate_vers('RDEPENDS', localdata)
         translate_vers('RRECOMMENDS', localdata)
@@ -857,6 +859,9 @@ python write_specfile () {
         if srclicense != splitlicense:
             spec_preamble_bottom.append('License: %s' % splitlicense)
         spec_preamble_bottom.append('Group: %s' % splitsection)
+
+        if srccustomtagschunk != splitcustomtagschunk:
+            spec_preamble_bottom.append(splitcustomtagschunk)
 
         # Replaces == Obsoletes && Provides
         robsoletes = bb.utils.explode_dep_versions2(splitrobsoletes or "")
@@ -960,6 +965,8 @@ python write_specfile () {
     spec_preamble_top.append('Group: %s' % srcsection)
     spec_preamble_top.append('Packager: %s' % srcmaintainer)
     spec_preamble_top.append('URL: %s' % srchomepage)
+    if srccustomtagschunk:
+        spec_preamble_top.append(srccustomtagschunk)
     tail_source(d)
 
     # Replaces == Obsoletes && Provides
