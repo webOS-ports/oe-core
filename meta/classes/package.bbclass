@@ -1409,7 +1409,7 @@ python package_do_shlibs() {
                 if not this_soname in sonames:
                     if shlibs_search_dirs_re.match(file):
                         # if library is private (only used by package) then do not build shlib for it
-                        if not private_libs or -1 == private_libs.find(this_soname):
+                        if not private_libs or this_soname not in private_libs:
                             sonames.append(this_soname)
                     else:
                         bb.debug(2, "ignoring soname %s from %s, because path doesn't match %s" % (this_soname, file, shlibs_search_dirs_re_txt))
@@ -1495,7 +1495,8 @@ python package_do_shlibs() {
     read_shlib_providers()
 
     for pkg in packages.split():
-        private_libs = d.getVar('PRIVATE_LIBS_' + pkg, True) or d.getVar('PRIVATE_LIBS', True)
+        private_libs = d.getVar('PRIVATE_LIBS_' + pkg, True) or d.getVar('PRIVATE_LIBS', True) or ""
+        private_libs = private_libs.split()
         needs_ldconfig = False
         bb.debug(2, "calculating shlib provides for %s" % pkg)
 
@@ -1564,6 +1565,14 @@ python package_do_shlibs() {
 
         deps = list()
         for n in needed[pkg]:
+            # if n is in private libraries, don't try to search provider for it
+            # this could cause problem in case some abc.bb provides private
+            # /opt/abc/lib/libfoo.so.1 and contains /usr/bin/abc depending on system library libfoo.so.1
+            # but skipping it is still better alternative than providing own
+            # version and then adding runtime dependency for the same system library
+            if private_libs and n in private_libs:
+                bb.debug(2, '%s: Dependency %s covered by PRIVATE_LIBS' % (pkg, n))
+                continue
             if n in shlib_provider.keys():
                 (dep_pkg, ver_needed) = shlib_provider[n]
 
