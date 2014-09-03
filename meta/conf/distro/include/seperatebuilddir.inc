@@ -539,7 +539,7 @@ B_pn-neon-native = "${SEPB}"
 ##B_pn-nfs-utils = "${SEPB}"
 B_pn-npth = "${SEPB}"
 #B_pn-nspr = "${SEPB}"
-B_pn-ofono = "${SEPB}"
+# B_pn-ofono = "${SEPB}"
 B_pn-oh-puzzles = "${SEPB}"
 ## make[2]: openjade-1.3.2/grove/../Makefile.comm: No such file or directory
 ##B_pn-openjade-native = "${SEPB}"
